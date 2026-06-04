@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Scan, ShoppingCart, Plus, Minus, Trash2, CreditCard, Banknote, 
   Receipt, X, Search, Package, BarChart3, Users, Settings, 
   ChevronRight, Printer, QrCode, Smartphone, Check, AlertCircle,
-  ArrowLeft, Save, Edit3, Tag, TrendingUp, Clock, Calendar,
-  DollarSign, Percent, Grid, List, Filter, Download, Upload,
-  Moon, Sun, LogOut, Lock, Unlock, History, RotateCcw, Send,
-  User, Shield, Bell, FileText, Eye, EyeOff, Trash, ArrowUpDown,
-  ChevronDown, ChevronUp, Store, Zap, Award, Star
+  Save, Edit3, Tag, TrendingUp, Clock,
+  DollarSign, Percent, Grid, List, Download,
+  Moon, Sun, LogOut, Lock, Unlock, History, RotateCcw,
+  Eye, ArrowUpDown,
+  Store, Zap, Award
 } from 'lucide-react';
 
 // ============================================
@@ -166,7 +166,7 @@ export default function POSApp() {
   const [orderNotes, setOrderNotes] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [lowStockThreshold, setLowStockThreshold] = useState(10);
-  const [showBarcodeInput, setShowBarcodeInput] = useState(false);
+  const [, setShowBarcodeInput] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState('');
 
   // Save data to localStorage
@@ -308,13 +308,13 @@ export default function POSApp() {
 
   // Refund order
   const refundOrder = (orderId: string) => {
-    const orderToRefund = orders.find(o => o.id === orderId);
+    const orderToRefund = orders.find((o: Order) => o.id === orderId);
     if (orderToRefund) {
       // Restore stock
-      orderToRefund.items.forEach(item => {
-        setProducts(prev => prev.map(product => product.id === item.id ? { ...product, stock: product.stock + item.quantity } : product));
+      orderToRefund.items.forEach((item: CartItem) => {
+        setProducts((prev: Product[]) => prev.map((product: Product) => product.id === item.id ? { ...product, stock: product.stock + item.quantity } : product));
       });
-      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'refunded' as const } : order));
+      setOrders((prev: Order[]) => prev.map((order: Order) => order.id === orderId ? { ...order, status: 'refunded' as const } : order));
       showNotification('Order refunded');
     }
   };
@@ -458,10 +458,10 @@ export default function POSApp() {
             setQuickDiscount={setQuickDiscount}
             customerName={customerName}
             setCustomerName={setCustomerName}
-            orderNotes={orderNotes}
-            setOrderNotes={setOrderNotes}
-            showScanner={showScanner}
-            setShowScanner={setShowScanner}
+            
+            
+            
+            
             showPayment={showPayment}
             setShowPayment={setShowPayment}
             completeOrder={completeOrder}
@@ -510,6 +510,8 @@ export default function POSApp() {
             users={USERS}
             lowStockThreshold={lowStockThreshold}
             setLowStockThreshold={setLowStockThreshold}
+            products={products}
+            orders={orders}
           />
         )}
       </main>
@@ -2315,7 +2317,7 @@ function ReportsDashboard({ darkMode, orders, products }: any) {
 // ============================================
 // SETTINGS PANEL
 // ============================================
-function SettingsPanel({ darkMode, currentUser, users, lowStockThreshold, setLowStockThreshold }: any) {
+function SettingsPanel({ darkMode, currentUser, users, lowStockThreshold, setLowStockThreshold, products, orders }: any) {
   const [activeSection, setActiveSection] = useState<'general' | 'users' | 'store'>('general');
   const [storeName, setStoreName] = useState('MartPOS Store');
   const [storeAddress, setStoreAddress] = useState('123 Main Street, City');
