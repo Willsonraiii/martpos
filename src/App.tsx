@@ -335,9 +335,6 @@ export default function POSApp() {
     const product = products.find(p => p.barcode === barcode);
     if (product) {
       addToCart(product);
-      setShowScanner(false);
-      setShowBarcodeInput(false);
-      setBarcodeInput('');
     } else {
       showNotification('Product not found!');
     }
