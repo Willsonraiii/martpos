@@ -151,8 +151,7 @@ export default function POSApp() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showScanner, setShowScanner] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -469,10 +468,7 @@ export default function POSApp() {
             setViewMode={setViewMode}
             onBarcodeScan={handleBarcodeScan}
             lowStockProducts={lowStockProducts}
-            showBarcodeInput={showBarcodeInput}
-            setShowBarcodeInput={setShowBarcodeInput}
-            barcodeInput={barcodeInput}
-            setBarcodeInput={setBarcodeInput}
+            // Barcode input props removed
           />
         )}
 
@@ -491,7 +487,6 @@ export default function POSApp() {
             darkMode={darkMode}
             orders={orders}
             refundOrder={refundOrder}
-            products={products}
           />
         )}
 
@@ -499,7 +494,6 @@ export default function POSApp() {
           <ReportsDashboard
             darkMode={darkMode}
             orders={orders}
-            products={products}
           />
         )}
 
@@ -655,20 +649,11 @@ function POSTerminal({
   cartTotal, itemCount, quickDiscount, setQuickDiscount, customerName,
   setCustomerName, orderNotes, setOrderNotes, showScanner, setShowScanner,
   showPayment, setShowPayment, completeOrder, viewMode, setViewMode,
-  onBarcodeScan, lowStockProducts, showBarcodeInput, setShowBarcodeInput,
-  barcodeInput, setBarcodeInput
+  onBarcodeScan, lowStockProducts
 }: any) {
   const [showDiscountModal, setShowDiscountModal] = useState(false);
   const [selectedItemForDiscount, setSelectedItemForDiscount] = useState<string | null>(null);
   const [discountValue, setDiscountValue] = useState(0);
-  const barcodeInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (showBarcodeInput && barcodeInputRef.current) {
-      barcodeInputRef.current.focus();
-    }
-  }, [showBarcodeInput]);
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-100px)]">
       {/* Products Panel */}
@@ -691,7 +676,7 @@ function POSTerminal({
               />
             </div>
             <button
-              onClick={() => setShowBarcodeInput(!showBarcodeInput)}
+              onClick={() => alert('Barcode: Use search box or USB scanner')}
               className="flex items-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-all active:scale-95"
             >
               <Scan className="w-5 h-5" />
@@ -713,55 +698,7 @@ function POSTerminal({
             </div>
           </div>
 
-          {/* Barcode Input */}
-          <AnimatePresence>
-            {showBarcodeInput && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="flex gap-2 mt-3">
-                  <input
-                    ref={barcodeInputRef}
-                    type="text"
-                    placeholder="Enter barcode and press Enter..."
-                    value={barcodeInput}
-                    onChange={(e) => setBarcodeInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && barcodeInput) {
-                        onBarcodeScan(barcodeInput);
-                        setBarcodeInput('');
-                      }
-                    }}
-                    className={`flex-1 px-4 py-2 rounded-xl text-sm outline-none ${
-                      darkMode 
-                        ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' 
-                        : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                    } border`}
-                  />
-                  <button
-                    onClick={() => {
-                      if (barcodeInput) {
-                        onBarcodeScan(barcodeInput);
-                        setBarcodeInput('');
-                      }
-                    }}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-all"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setShowBarcodeInput(false)}
-                    className={`px-3 py-2 rounded-xl ${darkMode ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Barcode scanning via search or USB scanner */}
 
           {/* Categories */}
           <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
@@ -1567,7 +1504,7 @@ function ProductsManager({ darkMode, products, setProducts, categories, lowStock
   const exportProducts = () => {
     const csv = [
       ['ID', 'Barcode', 'SKU', 'Name', 'Category', 'Price', 'Cost', 'Stock', 'Tax Rate', 'Description'].join(','),
-      ...products.map(p => [p.id, p.barcode, p.sku, `"${p.name}"`, p.category, p.price, p.cost, p.stock, p.taxRate, `"${p.description || ''}"`].join(','))
+      ...products.map((p: Product) => [p.id, p.barcode, p.sku, `"${p.name}"`, p.category, p.price, p.cost, p.stock, p.taxRate, `"${p.description || ''}"`].join(','))
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -1860,7 +1797,7 @@ function ProductModal({ product, categories, onSave, onClose, darkMode }: any) {
 // ============================================
 // ORDERS MANAGER
 // ============================================
-function OrdersManager({ darkMode, orders, refundOrder, products }: any) {
+function OrdersManager({ darkMode, orders, refundOrder }: any) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'refunded'>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -2102,7 +2039,7 @@ function OrdersManager({ darkMode, orders, refundOrder, products }: any) {
 // ============================================
 // REPORTS DASHBOARD
 // ============================================
-function ReportsDashboard({ darkMode, orders, products }: any) {
+function ReportsDashboard({ darkMode, orders }: any) {
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('today');
 
   const now = new Date();
